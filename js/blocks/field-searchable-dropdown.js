@@ -2,9 +2,15 @@
  *
  * Ez a projekt egyetlen olyan darabja, ami a Blockly *belső* DOM-struktúrájára
  * támaszkodik (a legördülő menü kirenderelt elemeire). Ezért:
- *   - minden DOM-műveletet try/catch véd,
- *   - hiba esetén a mező csendben visszaesik a sima FieldDropdown viselkedésre,
- *     tehát a szerkesztő ettől soha nem törik el, csak a keresés vész el.
+ *   - a DOM-műveletek try/catch mögött futnak, hiba esetén a mező sima
+ *     legördülőként működik tovább,
+ *   - és magát a mezőt is a SG.createExerciseDropdown() gyáron át hozzuk létre,
+ *     ami ha bármi baj van, sima Blockly.FieldDropdown-t ad vissza.
+ *
+ * FONTOS: a Blockly valódi ES6 osztályokra fordul, ezért az öröklés is valódi
+ * `class ... extends` kell legyen. A régi ES5 prototípus-minta
+ * (Base.call(this, ...)) TypeError-t dob: "Class constructor cannot be invoked
+ * without 'new'".
  *
  * A SG.defineSearchableDropdown()-t a main.js hívja, miután a Blockly betöltődött.
  */
@@ -47,81 +53,98 @@ SG.defineSearchableDropdown = function () {
     return Array.prototype.slice.call(items);
   }
 
-  var FieldSearchableDropdown = function (menuGenerator, validator, config) {
-    Blockly.FieldDropdown.call(this, menuGenerator, validator, config);
-  };
+  class FieldSearchableDropdown extends Blockly.FieldDropdown {
 
-  FieldSearchableDropdown.prototype = Object.create(Blockly.FieldDropdown.prototype);
-  FieldSearchableDropdown.prototype.constructor = FieldSearchableDropdown;
-
-  FieldSearchableDropdown.prototype.showEditor_ = function (e) {
-    Blockly.FieldDropdown.prototype.showEditor_.call(this, e);
-    try {
-      this.injectSearchBox_();
-    } catch (err) {
-      // Eltért a várt Blockly DOM — a menü sima dropdownként továbbra is működik.
-      console.warn('[scratchgym] a kereső mező nem injektálható, sima dropdown marad:', err);
-    }
-  };
-
-  FieldSearchableDropdown.prototype.injectSearchBox_ = function () {
-    if (!Blockly.DropDownDiv || typeof Blockly.DropDownDiv.getContentDiv !== 'function') return;
-    var content = Blockly.DropDownDiv.getContentDiv();
-    if (!content) return;
-
-    var items = findMenuItems(content);
-    if (items.length < MIN_ITEMS_FOR_SEARCH) return;
-    if (content.querySelector('.sg-dropdown-search')) return;
-
-    var input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'sg-dropdown-search';
-    input.placeholder = 'Keresés…';
-    input.setAttribute('autocomplete', 'off');
-
-    var noResult = document.createElement('div');
-    noResult.className = 'sg-dropdown-noresult';
-    noResult.textContent = 'Nincs találat.';
-    noResult.hidden = true;
-
-    // Az elemek szövegét egyszer normalizáljuk, hogy gépelés közben csak illesztsünk.
-    var haystack = items.map(function (el) {
-      return SG.normalizeForSearch(el.textContent);
-    });
-
-    function applyFilter() {
-      var needle = SG.normalizeForSearch(input.value).trim();
-      var visible = 0;
-      for (var i = 0; i < items.length; i++) {
-        var match = !needle || haystack[i].indexOf(needle) !== -1;
-        items[i].style.display = match ? '' : 'none';
-        if (match) visible++;
+    showEditor_(e) {
+      super.showEditor_(e);
+      try {
+        this.injectSearchBox_();
+      } catch (err) {
+        // Eltért a várt Blockly DOM — a menü sima legördülőként tovább működik.
+        console.warn('[scratchgym] a kereső mező nem injektálható, ' +
+          'sima legördülő marad:', err);
       }
-      noResult.hidden = visible > 0;
     }
 
-    input.addEventListener('input', applyFilter);
+    injectSearchBox_() {
+      if (!Blockly.DropDownDiv || typeof Blockly.DropDownDiv.getContentDiv !== 'function') return;
+      var content = Blockly.DropDownDiv.getContentDiv();
+      if (!content) return;
 
-    // A Blockly menüje maga is figyeli a billentyűket (nyilak, betűugrás), ezért a
-    // gépelést nem engedjük tovább — kivéve a navigációs/kilépő billentyűket.
-    input.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape' || ev.key === 'Enter' ||
-          ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
-        return; // menjen a menühöz
+      var items = findMenuItems(content);
+      if (items.length < MIN_ITEMS_FOR_SEARCH) return;
+      if (content.querySelector('.sg-dropdown-search')) return;
+
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'sg-dropdown-search';
+      input.placeholder = 'Keresés…';
+      input.setAttribute('autocomplete', 'off');
+
+      var noResult = document.createElement('div');
+      noResult.className = 'sg-dropdown-noresult';
+      noResult.textContent = 'Nincs találat.';
+      noResult.hidden = true;
+
+      // Az elemek szövegét egyszer normalizáljuk, hogy gépelés közben csak
+      // illesztsünk.
+      var haystack = items.map(function (el) {
+        return SG.normalizeForSearch(el.textContent);
+      });
+
+      function applyFilter() {
+        var needle = SG.normalizeForSearch(input.value).trim();
+        var visible = 0;
+        for (var i = 0; i < items.length; i++) {
+          var match = !needle || haystack[i].indexOf(needle) !== -1;
+          items[i].style.display = match ? '' : 'none';
+          if (match) visible++;
+        }
+        noResult.hidden = visible > 0;
       }
-      ev.stopPropagation();
-    });
 
-    content.insertBefore(input, content.firstChild);
-    content.appendChild(noResult);
+      input.addEventListener('input', applyFilter);
 
-    // A fókusz beállítása a következő tickben, mert a Blockly a menü megnyitása
-    // után maga is fókuszt állít.
-    setTimeout(function () {
-      try { input.focus(); } catch (err) { /* nem kritikus */ }
-    }, 0);
-  };
+      // A Blockly menüje maga is figyeli a billentyűket (nyilak, betűugrás),
+      // ezért a gépelést nem engedjük tovább — kivéve a navigációs billentyűket.
+      input.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape' || ev.key === 'Enter' ||
+            ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+          return; // menjen a menühöz
+        }
+        ev.stopPropagation();
+      });
+
+      content.insertBefore(input, content.firstChild);
+      content.appendChild(noResult);
+
+      // A fókusz a következő tickben, mert a Blockly a menü megnyitása után
+      // maga is fókuszt állít.
+      setTimeout(function () {
+        try { input.focus(); } catch (err) { /* nem kritikus */ }
+      }, 0);
+    }
+  }
 
   SG.FieldSearchableDropdown = FieldSearchableDropdown;
   return FieldSearchableDropdown;
+};
+
+/**
+ * Kereshető legördülő mező létrehozása, biztonságos visszaeséssel.
+ *
+ * Ha a kereshető változat bármi miatt nem példányosítható, sima
+ * Blockly.FieldDropdown jön helyette: a szerkesztő ilyenkor is teljesen
+ * használható marad, csak a keresés vész el.
+ */
+SG.createExerciseDropdown = function (options, validator) {
+  try {
+    if (SG.FieldSearchableDropdown) {
+      return new SG.FieldSearchableDropdown(options, validator);
+    }
+  } catch (err) {
+    console.warn('[scratchgym] a kereshető legördülő nem hozható létre, ' +
+      'sima legördülő lesz helyette:', err);
+  }
+  return new Blockly.FieldDropdown(options, validator);
 };

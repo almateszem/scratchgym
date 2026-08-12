@@ -7,6 +7,7 @@ const path = require('path');
 const suites = [
   'interpreter.test.js',
   'preview-export.test.js',
+  'field-dropdown.test.js',
   'loader.test.js'
 ];
 

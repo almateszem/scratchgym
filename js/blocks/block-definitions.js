@@ -25,11 +25,9 @@ SG.defineBlocks = function () {
 
   Blockly.Blocks['gym_exercise'] = {
     init: function () {
-      var DropdownCls = SG.FieldSearchableDropdown || Blockly.FieldDropdown;
-
       this.appendDummyInput('ROW_NAME')
         .appendField('🏋')
-        .appendField(new DropdownCls(SG.exerciseDropdownOptions(), function (newValue) {
+        .appendField(SG.createExerciseDropdown(SG.exerciseDropdownOptions(), function (newValue) {
           var block = this.getSourceBlock();
           // A validátor a mező konstruktorából is lefuthat, amikor még nincs blokk.
           if (block) block.updateCustomVisibility_(newValue);
