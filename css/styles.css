@@ -1,0 +1,345 @@
+/* scratchgym — layout és előnézet stílusok.
+   A Blockly saját stílusait a js/blocks/toolbox.js-ben definiált téma adja. */
+
+:root {
+  --c-exercise: #4c97ff;
+  --c-control: #ff9f1a;
+  --c-progress: #e8514b;
+
+  --bg: #eef1f7;
+  --panel: #ffffff;
+  --ink: #1e2a3a;
+  --ink-soft: #6b7a90;
+  --line: #dde3ed;
+
+  --topbar-h: 56px;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ---------- Fejléc ---------- */
+
+#topbar {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 3px rgba(30, 42, 58, .06);
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 16px;
+}
+
+.brand .logo { font-size: 20px; }
+
+.brand .tagline {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.save-status {
+  font-size: 12px;
+  color: var(--ink-soft);
+  min-width: 90px;
+  text-align: right;
+}
+
+.btn {
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+}
+
+.btn:hover { background: #f4f6fb; }
+.btn:active { background: #e9edf6; }
+
+.btn.primary {
+  background: var(--c-exercise);
+  border-color: var(--c-exercise);
+  color: #fff;
+}
+.btn.primary:hover { background: #3f86e8; }
+
+.btn.danger { color: var(--c-progress); }
+.btn.danger:hover { background: #fdeceb; }
+
+/* ---------- Fő elrendezés ---------- */
+
+#layout {
+  display: flex;
+  height: calc(100% - var(--topbar-h));
+  align-items: stretch;
+}
+
+#blocklyDiv {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+}
+
+#previewPanel {
+  flex: 0 0 380px;
+  width: 380px;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  padding: 14px 14px 40px;
+}
+
+@media (max-width: 1100px) {
+  #previewPanel { flex-basis: 300px; width: 300px; }
+}
+
+/* ---------- Előnézet fejléc ---------- */
+
+.panel-head h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  letter-spacing: .01em;
+}
+
+.week-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.week-control label { color: var(--ink-soft); }
+
+.week-control input[type="range"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  accent-color: var(--c-progress);
+}
+
+.week-control output {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  min-width: 52px;
+  text-align: right;
+}
+
+.week-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+/* ---------- Figyelmeztetések ---------- */
+
+.warnings {
+  margin: 12px 0 0;
+  padding: 9px 11px;
+  background: #fff6e5;
+  border: 1px solid #ffd591;
+  border-radius: var(--radius);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.warnings ul { margin: 0; padding-left: 18px; }
+.warnings li + li { margin-top: 3px; }
+
+.warnings .dismiss {
+  float: right;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1;
+  padding: 0 0 0 8px;
+}
+
+/* ---------- Heti rács ---------- */
+
+.week-grid {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.day-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.day-card.is-empty { opacity: .55; }
+
+.day-card > h3 {
+  margin: 0;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #fff;
+  background: var(--c-control);
+}
+
+.day-card.is-empty > h3 { background: #b6c0d0; }
+
+.day-body { padding: 7px 11px 9px; }
+
+.empty-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+/* ---------- Aktivitások ---------- */
+
+.activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.activity-list .activity-list {
+  margin-top: 4px;
+  padding-left: 10px;
+  border-left: 2px solid #ffe0b8;
+}
+
+.activity {
+  padding: 4px 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.activity + .activity { border-top: 1px dashed #edf0f6; }
+
+.ex-name {
+  font-weight: 600;
+  border-left: 3px solid var(--c-exercise);
+  padding-left: 7px;
+}
+
+.ex-meta {
+  display: block;
+  padding-left: 10px;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+}
+
+.ex-meta .weight {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ex-meta .weight.is-progressive { color: var(--c-progress); }
+
+.circuit-head {
+  font-weight: 600;
+  color: #b06a00;
+  border-left: 3px solid var(--c-control);
+  padding-left: 7px;
+}
+
+.circuit-empty {
+  padding-left: 10px;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+/* ---------- Betöltési hiba ---------- */
+
+.boot-error {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(30, 42, 58, .55);
+  z-index: 999;
+  padding: 20px;
+}
+
+.boot-error[hidden] { display: none; }
+
+.boot-error-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 22px 26px;
+  max-width: 520px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, .25);
+}
+
+.boot-error-card h2 { margin-top: 0; font-size: 17px; }
+.boot-error-card ul { padding-left: 20px; font-size: 13px; line-height: 1.6; }
+.boot-error-card code {
+  background: #f1f4fa;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.boot-error-detail {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  word-break: break-all;
+  margin-bottom: 0;
+}
+
+/* ---------- Kereshető dropdown ---------- */
+
+.sg-dropdown-search {
+  display: block;
+  width: calc(100% - 12px);
+  margin: 6px;
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  outline: none;
+}
+
+.sg-dropdown-search:focus { border-color: var(--c-exercise); }
+
+.sg-dropdown-noresult {
+  margin: 6px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-style: italic;
+}

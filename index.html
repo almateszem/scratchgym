@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>scratchgym — blokkos edzésterv-szerkesztő</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header id="topbar">
+  <div class="brand">
+    <span class="logo">🏋</span>
+    <strong>scratchgym</strong>
+    <span class="tagline">blokkos edzésterv-szerkesztő</span>
+  </div>
+  <div class="actions">
+    <span id="saveStatus" class="save-status" aria-live="polite"></span>
+    <button id="btnExportFile" type="button" class="btn primary">⬇ JSON letöltése</button>
+    <button id="btnExportClip" type="button" class="btn">📋 Vágólapra</button>
+    <button id="btnClear" type="button" class="btn danger">🗑 Új terv</button>
+  </div>
+</header>
+
+<main id="layout">
+  <div id="blocklyDiv"></div>
+
+  <aside id="previewPanel">
+    <div class="panel-head">
+      <h2>📅 Előnézet</h2>
+      <div id="weekControl" class="week-control" hidden>
+        <label for="weekSlider">Hét</label>
+        <input id="weekSlider" type="range" min="1" max="1" value="1" step="1">
+        <output id="weekReadout">1 / 1</output>
+      </div>
+      <p id="weekNote" class="week-note"></p>
+    </div>
+    <div id="warnings" class="warnings" hidden></div>
+    <div id="weekGrid" class="week-grid"></div>
+  </aside>
+</main>
+
+<div id="bootError" class="boot-error" hidden>
+  <div class="boot-error-card">
+    <h2>Nem sikerült betölteni a Blockly-t</h2>
+    <p>A szerkesztő a Blockly könyvtárat CDN-ről tölti be, de egyik forrás sem válaszolt.</p>
+    <ul>
+      <li>Ellenőrizd az internetkapcsolatot.</li>
+      <li>Ha offline szeretnéd használni, töltsd le a Blockly-t, és írd át a
+        <code>SG.BLOCKLY_SOURCES</code> listát a <code>js/main.js</code> fájlban helyi útvonalakra.</li>
+    </ul>
+    <p class="boot-error-detail" id="bootErrorDetail"></p>
+  </div>
+</div>
+
+<!-- Saját modulok. Egyik sem hivatkozik a Blockly-ra betöltéskor: csak adatot és
+     gyárfüggvényeket akasztanak a globális SG névtérre. A tényleges Blockly-függő
+     inicializálást a main.js végzi, miután a könyvtár ténylegesen betöltődött. -->
+<script src="js/data/exercises.js"></script>
+<script src="js/blocks/field-searchable-dropdown.js"></script>
+<script src="js/blocks/block-definitions.js"></script>
+<script src="js/blocks/toolbox.js"></script>
+<script src="js/core/progression.js"></script>
+<script src="js/core/interpreter.js"></script>
+<script src="js/storage/storage.js"></script>
+<script src="js/preview/preview.js"></script>
+<script src="js/export/export.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
