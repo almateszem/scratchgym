@@ -157,6 +157,7 @@ SG.BLOCKLY_SOURCES = [
 
   function start() {
     SG.defineSearchableDropdown();
+    SG.defineRenderer();
     // A blokkdefiníciók négy fájlban, témakörönként. A sorrend csak annyiban
     // számít, hogy a progresszió adja a közös állapot-tulajdonságlistát.
     SG.defineLayoutBlocks();
@@ -167,8 +168,9 @@ SG.BLOCKLY_SOURCES = [
     workspace = Blockly.inject('blocklyDiv', {
       toolbox: SG.buildToolbox(),
       theme: SG.buildTheme(),
-      renderer: 'zelos',
-      grid: { spacing: 24, length: 3, colour: '#e3e8f0', snap: true },
+      // A saját "kártyás" renderer, ha regisztrálható volt — különben zelos.
+      renderer: SG.rendererName(),
+      grid: { spacing: 26, length: 2, colour: '#1c2740', snap: true },
       zoom: { controls: true, wheel: true, startScale: 0.85, minScale: 0.4, maxScale: 2 },
       trashcan: true,
       move: { scrollbars: true, drag: true, wheel: true }

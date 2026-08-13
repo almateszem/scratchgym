@@ -1,16 +1,23 @@
-/* scratchgym — layout és előnézet stílusok.
-   A Blockly saját stílusait a js/blocks/toolbox.js-ben definiált téma adja. */
+/* scratchgym — layout és előnézet stílusok (sötét téma).
+   A Blockly saját blokk-stílusait a js/blocks/toolbox.js-ben definiált téma, a
+   blokkok alakját a js/blocks/renderer-cards.js adja. Ez a fájl a HTML-felület
+   és a Blockly HTML-ben élő részei (legördülő menü, mezőszerkesztő, toolbox). */
 
 :root {
   --c-exercise: #4c97ff;
   --c-control: #ff9f1a;
   --c-progress: #e8514b;
+  --c-logic: #59c059;
+  --c-value: #9966ff;
 
-  --bg: #eef1f7;
-  --panel: #ffffff;
-  --ink: #1e2a3a;
-  --ink-soft: #6b7a90;
-  --line: #dde3ed;
+  /* Sötét paletta. --bg a vászon alatti alap, --panel a fejléc és az
+     oldalpanel, --surface a kártyák (napkártya, hibadoboz) háttere. */
+  --bg: #0b111d;
+  --panel: #111a2b;
+  --surface: #16203a;
+  --ink: #e7edf9;
+  --ink-soft: #8a99b5;
+  --line: #22304a;
 
   --topbar-h: 56px;
   --radius: 10px;
@@ -41,17 +48,27 @@ body {
   padding: 0 16px;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
-  box-shadow: 0 1px 3px rgba(30, 42, 58, .06);
 }
 
 .brand {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
   font-size: 16px;
 }
 
-.brand .logo { font-size: 20px; }
+/* A logó lekerekített jelvényként, hogy legyen egy fix vizuális horgony. */
+.brand .logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 17px;
+}
 
 .brand .tagline {
   color: var(--ink-soft);
@@ -77,24 +94,25 @@ body {
   padding: 7px 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   cursor: pointer;
   transition: background .12s, border-color .12s;
 }
 
-.btn:hover { background: #f4f6fb; }
-.btn:active { background: #e9edf6; }
+.btn:hover { background: #1d2942; border-color: #2e3f5f; }
+.btn:active { background: #131d33; }
 
 .btn.primary {
   background: var(--c-exercise);
   border-color: var(--c-exercise);
-  color: #fff;
+  color: #06101f;
+  font-weight: 600;
 }
-.btn.primary:hover { background: #3f86e8; }
+.btn.primary:hover { background: #6aa9ff; border-color: #6aa9ff; }
 
-.btn.danger { color: var(--c-progress); }
-.btn.danger:hover { background: #fdeceb; }
+.btn.danger { color: #ff8a83; }
+.btn.danger:hover { background: #2a1519; border-color: #5a2a2c; }
 
 /* ---------- Fő elrendezés ---------- */
 
@@ -165,9 +183,10 @@ body {
 .warnings {
   margin: 12px 0 0;
   padding: 9px 11px;
-  background: #fff6e5;
-  border: 1px solid #ffd591;
+  background: #2b2210;
+  border: 1px solid #5c4415;
   border-radius: var(--radius);
+  color: #ffd9a0;
   font-size: 12px;
   line-height: 1.5;
 }
@@ -181,7 +200,7 @@ body {
   background: none;
   cursor: pointer;
   font-size: 14px;
-  color: var(--ink-soft);
+  color: #c9a66b;
   line-height: 1;
   padding: 0 0 0 8px;
 }
@@ -199,9 +218,10 @@ body {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   overflow: hidden;
+  background: var(--surface);
 }
 
-.day-card.is-empty { opacity: .55; }
+.day-card.is-empty { opacity: .5; }
 
 .day-card > h3 {
   margin: 0;
@@ -210,11 +230,11 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .05em;
-  color: #fff;
+  color: #1a1204;
   background: var(--c-control);
 }
 
-.day-card.is-empty > h3 { background: #b6c0d0; }
+.day-card.is-empty > h3 { background: #3d4a63; color: var(--ink-soft); }
 
 .day-body { padding: 7px 11px 9px; }
 
@@ -236,7 +256,7 @@ body {
 .activity-list .activity-list {
   margin-top: 4px;
   padding-left: 10px;
-  border-left: 2px solid #ffe0b8;
+  border-left: 2px solid #5c4415;
 }
 
 .activity {
@@ -245,7 +265,7 @@ body {
   line-height: 1.45;
 }
 
-.activity + .activity { border-top: 1px dashed #edf0f6; }
+.activity + .activity { border-top: 1px dashed #22304a; }
 
 .ex-name {
   font-weight: 600;
@@ -266,11 +286,11 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.ex-meta .weight.is-progressive { color: var(--c-progress); }
+.ex-meta .weight.is-progressive { color: #ff8a83; }
 
 .circuit-head {
   font-weight: 600;
-  color: #b06a00;
+  color: #ffc165;
   border-left: 3px solid var(--c-control);
   padding-left: 7px;
 }
@@ -290,7 +310,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(30, 42, 58, .55);
+  background: rgba(4, 8, 16, .7);
   z-index: 999;
   padding: 20px;
 }
@@ -298,17 +318,18 @@ body {
 .boot-error[hidden] { display: none; }
 
 .boot-error-card {
-  background: #fff;
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 22px 26px;
   max-width: 520px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, .25);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, .5);
 }
 
 .boot-error-card h2 { margin-top: 0; font-size: 17px; }
 .boot-error-card ul { padding-left: 20px; font-size: 13px; line-height: 1.6; }
 .boot-error-card code {
-  background: #f1f4fa;
+  background: var(--surface);
   padding: 1px 5px;
   border-radius: 4px;
   font-size: 12px;
@@ -321,6 +342,95 @@ body {
   margin-bottom: 0;
 }
 
+/* ================================================================
+   A Blockly HTML-ben élő részei.
+
+   A blokkok színét és alakját a téma és a renderer adja, de a legördülő
+   menü, a mezőszerkesztő beviteli mező, a jobb gombos menü és a toolbox
+   sima DOM — ezeket itt kell sötétre húzni. Az osztálynevek a Blockly 11
+   belső nevei; ha egy jövőbeli verzióban változnak, itt csak a világos
+   alapértelmezés jön vissza, működési hiba nem lesz belőle.
+   ================================================================ */
+
+/* Toolbox oszlop */
+.blocklyToolboxDiv {
+  border-right: 1px solid var(--line);
+  padding-top: 6px;
+}
+
+/* Szekciócím a kategóriák fölött — tisztán dekoratív. */
+.blocklyToolboxDiv::before {
+  content: "BLOKKOK";
+  display: block;
+  padding: 10px 16px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  color: var(--ink-soft);
+}
+
+.blocklyToolboxCategory { border-radius: 8px; margin: 2px 6px; }
+
+/* A kiválasztott kategória háttérszínét a Blockly inline állítja a kategória
+   színére — ez a sötét sávon égetően harsány lenne, ezért kell a !important.
+   A kategória saját színe a sor bal széli sávjában így is ott marad. */
+.blocklyToolboxCategory .blocklyTreeRow.blocklyTreeSelected {
+  background-color: rgba(255, 255, 255, .09) !important;
+  color: var(--ink);
+}
+
+.blocklyToolboxCategory .blocklyTreeRow:hover {
+  background-color: rgba(255, 255, 255, .05);
+}
+
+/* Üres értékfoglalat ("lyuk") a blokkban. A Blockly ezt a blokk keretszínével
+   tölti ki (nálunk ez a kategória élénk színe), amitől minden üres foglalat
+   világítana. Sötét mélyedés kell helyette. */
+.blocklyOutlinePath { fill: #0b1220; }
+
+/* Szerkeszthető mezők (szám- és szövegmezők) szövege.
+   Az alapértelmezés #575E75 szürke, ami a sötét mező-pilleken olvashatatlan.
+   Az !important azért kell, mert a Blockly ezt a szabályt a renderer nevével
+   prefixelve adja ki (".sgcards-renderer .blocklyEditableText>text"), tehát
+   magasabb specifikusságú, mint bármelyik osztály-szelektorunk.
+   A legördülő mezők szövege ettől függetlenül már fehér (.blocklyDropdownText). */
+.blocklyEditableText > text,
+.blocklyEditableText > g > text {
+  fill: #ffffff !important;
+}
+
+/* A mezőszerkesztés közbeni HTML input szövege is fehér legyen — a Blockly
+   ennek a színét a mező szövegszínéből veszi át, ami az előbbi szabály előtt
+   szürke volt. */
+.blocklyWidgetDiv .blocklyHtmlInput,
+.blocklyDropDownDiv .blocklyHtmlInput {
+  color: #ffffff !important;
+}
+
+/* Mezőszerkesztés közbeni HTML input (szám- és szövegmezők). */
+.blocklyHtmlInput {
+  background: #0d1524;
+  color: var(--ink);
+  caret-color: var(--c-exercise);
+}
+
+/* Jobb gombos menü. A blokkokon nyíló legördülő menü ettől független:
+   annak a hátterét a Blockly a blokk színéből veszi (FIELD_DROPDOWN_COLOURED_DIV). */
+.blocklyWidgetDiv .blocklyMenu {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+}
+
+.blocklyWidgetDiv .blocklyMenuItem { color: var(--ink); }
+.blocklyWidgetDiv .blocklyMenuItemDisabled { color: #55637d; }
+.blocklyWidgetDiv .blocklyMenuItemHighlight { background-color: rgba(255, 255, 255, .08); }
+
+/* A zoom- és kukagombok a sötét vásznon túl harsányak lennének. */
+.blocklyZoom > image, .blocklyZoom > svg > image { opacity: .5; }
+.blocklyZoom > image:hover, .blocklyZoom > svg > image:hover { opacity: .9; }
+.blocklyTrash { opacity: .6; }
+
 /* ---------- Kereshető dropdown ---------- */
 
 .sg-dropdown-search {
@@ -330,16 +440,19 @@ body {
   padding: 6px 8px;
   font: inherit;
   font-size: 13px;
-  border: 1px solid var(--line);
+  color: var(--ink);
+  background: rgba(0, 0, 0, .35);
+  border: 1px solid rgba(255, 255, 255, .25);
   border-radius: 6px;
   outline: none;
 }
 
-.sg-dropdown-search:focus { border-color: var(--c-exercise); }
+.sg-dropdown-search::placeholder { color: rgba(255, 255, 255, .55); }
+.sg-dropdown-search:focus { border-color: rgba(255, 255, 255, .6); }
 
 .sg-dropdown-noresult {
   margin: 6px;
   font-size: 12px;
-  color: var(--ink-soft);
+  color: rgba(255, 255, 255, .7);
   font-style: italic;
 }

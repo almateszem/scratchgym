@@ -260,3 +260,64 @@ Készült: 2026-08-13, a blokk-definíciós lépés után.
       - js/export/export.js:86: document.execCommand('copy') elavult, de a
         Clipboard API file:// alól gyakran nem elérhető, így a fallback
         indokolt marad — csak tudni kell róla.
+
+================================================================
+6. A SÖTÉT / KÁRTYÁS DESIGN UTÁN MARADT NYITOTT PONTOK
+================================================================
+
+[6.1] SÜRGŐS — a CDN-fallback verziószám nélküli, most már renderert is visz
+      Hol:  js/main.js:24-30 (a 3. és 4. forrás)
+      Mi:   Az első két forrás blockly@11.2.2-re mutat, a másik kettő viszont
+            verzió nélküli ("unpkg.com/blockly/…"), tehát mindig a legfrissebbet
+            hozza. A js/blocks/renderer-cards.js a Blockly renderer-osztályaiból
+            származik le, a js/blocks/blocks-logic.js pedig a mutátor-API-ra
+            épül — ezek pont azok a felületek, amik major verzióváltásnál
+            elmozdulnak. Eddig egy verzióugrás legfeljebb apró eltérést okozott
+            volna, mostantól a szerkesztő megjelenése és az elágazás-blokkok
+            múlnak rajta.
+      Megj.: a védelem be van építve (a renderer regisztrációja try/catch-ben
+            van, hiba esetén a beépített zelos indul), de a helyes megoldás
+            mind a négy forrás azonos verzióra pinelése.
+      Figyelem: a pinelés átírja a test/loader.test.js elvárásait (a 2. eset
+            kifejezetten a verzió nélküli 3. forrásra ellenőriz), ezért a
+            teszttel együtt kell módosítani.
+
+[6.2] A designkoncepció három eleme szándékosan kimaradt
+      Mi:   Ezek a Blockly modelljével mennek szembe, ezért nem készültek el:
+            a) Függőleges rés az egymás alá kapcsolt blokkok között — a Blockly
+               a kapcsolódási pontnál élre illeszt, térköz nem állítható.
+               Trükközni lehet vele (a látható kártyát a blokk határánál
+               beljebb rajzoló saját drawer), de az már a rajzoló réteget
+               érinti, nem csak a konstansokat.
+            b) "+ Gyakorlat hozzáadása" / "+ Nap hozzáadása" szaggatott sorok a
+               konténerblokkok alján — a Blockly-ban nincs ilyen fogalom; vagy
+               egy karbantartandó placeholder-blokk, vagy a vászon fölé
+               pozicionált HTML-réteg kellene hozzá.
+            c) HTML-kártyás bal oldali blokklista drag-fogantyúval — saját
+               toolbox-osztályt vagy a Blockly toolboxának teljes leváltását
+               igényli, a húzás natív érzetéért a gesztus-kezelőbe nyúlva.
+
+[6.3] A törlő × nem a kártya sarkában ül
+      Hol:  js/blocks/blocks-layout.js — a 'DELETE' mező a ROW_NAME sor végén
+      Mi:   A Blockly egy soron belül balról jobbra pakolja a mezőket, és egy
+            sor egy input — így a × a gyakorlat-legördülő UTÁN következik, nem
+            a kártya jobb felső sarkában, mint a koncepción. Sarokba tenni
+            csak a renderer sor-elrendezésébe nyúlva lehetne.
+
+[6.4] A design több ponton a Blockly belső CSS-osztályneveire épül
+      Hol:  css/styles.css — .blocklyOutlinePath, .blocklyTreeSelected és
+            .blocklyEditableText szabályok
+      Mi:   Az üres foglalatokat a Blockly a blokk keretszínével tölti ki (ami
+            nálunk a kategória élénk színe), a kiválasztott toolbox-kategória
+            hátterét pedig inline stílusban állítja a kategória színére —
+            mindkettőt CSS-ből írjuk felül. Ha egy jövőbeli Blockly-verzióban
+            elmozdulnak ezek az osztálynevek, a világos alapértelmezés jön
+            vissza (világító lyukak, harsány kategória-sáv). Működési hiba nem
+            lesz belőle, de szemre azonnal látszik.
+      Ehhez tartozik egy specifikussági csapda is: a Blockly a mező-szabályait
+            a renderer nevével prefixelve adja ki
+            (".sgcards-renderer .blocklyEditableText>text"), ami erősebb
+            bármelyik sima osztály-szelektorunknál — ezért kell a mezőszöveg
+            fehérítéséhez !important. Ha valaki átnevezi a renderert
+            (SG.RENDERER_NAME), a prefix változik, de az !important miatt a
+            szabály akkor is érvényben marad.

@@ -10,6 +10,14 @@
 
 window.SG = window.SG || {};
 
+/* A gyakorlatkártya sarkában ülő törlőgomb ikonja. Beágyazott data URI:
+   nincs külön fájl, ami file:// alól is biztosan betölt. */
+SG.CLOSE_ICON_DATA_URI = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3d' +
+  'y53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2ID' +
+  'E2Ij48cGF0aCBkPSJNNC42IDQuNmw2LjggNi44TTExLjQgNC42bC02LjggNi44IiBmaWxsPSJub25' +
+  'lIiBzdHJva2U9IiM5M2EyYmQiIHN0cm9rZS13aWR0aD0iMS45IiBzdHJva2UtbGluZWNhcD0icm91' +
+  'bmQiLz48L3N2Zz4=';
+
 SG.defineLayoutBlocks = function () {
 
   /** Újrarenderelés verzió-biztosan (Blockly 11-ben queueRender, régebben render). */
@@ -17,6 +25,26 @@ SG.defineLayoutBlocks = function () {
     if (!block.rendered) return;
     if (typeof block.queueRender === 'function') block.queueRender();
     else if (typeof block.render === 'function') block.render();
+  }
+
+  /**
+   * Törlőgomb-mező. A FieldImage nem szerializálódik (EDITABLE = false), így a
+   * mentett terv alakja nem változik tőle.
+   *
+   * A tényleges törlés a következő tickben fut: a kattintás kezelése közben a
+   * Blockly gesztus-kezelője még fogja a blokkot, és a saját magát eldobó blokk
+   * ilyenkor hibát tud dobni.
+   */
+  function createDeleteField() {
+    return new Blockly.FieldImage(SG.CLOSE_ICON_DATA_URI, 14, 14, 'Törlés',
+      function (field) {
+        var block = field.getSourceBlock();
+        if (!block || block.isInFlyout) return;
+        setTimeout(function () {
+          var dying = typeof block.isDeadOrDying === 'function' && block.isDeadOrDying();
+          if (block.workspace && !dying) block.dispose(true);
+        }, 0);
+      });
   }
 
   /* ------------------------------------------------------------------ *
@@ -31,7 +59,8 @@ SG.defineLayoutBlocks = function () {
           var block = this.getSourceBlock();
           // A validátor a mező konstruktorából is lefuthat, amikor még nincs blokk.
           if (block) block.updateCustomVisibility_(newValue);
-        }), 'EXERCISE');
+        }), 'EXERCISE')
+        .appendField(createDeleteField(), 'DELETE');
 
       this.appendDummyInput('ROW_CUSTOM')
         .appendField('neve:')

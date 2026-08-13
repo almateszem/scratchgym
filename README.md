@@ -174,6 +174,7 @@ js/
   data/exercises.js                gyakorlat-adatbázis, napok
   blocks/
     field-searchable-dropdown.js   kereshető legördülő mező
+    renderer-cards.js              "kártyás" blokk-renderer (zelos leszármazott)
     blocks-layout.js               gyakorlat, kör, nap, ciklus
     blocks-progress.js             hét lezárásakor futó szabályblokkok
     blocks-logic.js                elágazás, ismétlés, feltételek

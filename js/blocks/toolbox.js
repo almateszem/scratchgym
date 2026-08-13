@@ -11,35 +11,47 @@ SG.COLORS = {
   value: '#9966ff'
 };
 
+/**
+ * Sötét téma: a blokk NEM telt színnel megy, hanem sötét, enyhén a kategória
+ * felé színezett kitöltéssel és a kategória színével húzott kerettel.
+ *
+ *   colourPrimary   — a blokk kitöltése (sötét)
+ *   colourSecondary — az árnyékblokkoké, pl. a beágyazott gym_number (kicsit világosabb)
+ *   colourTertiary  — a keret (a kategória élénk színe)
+ *
+ * A legördülő menü hátterét a Blockly szintén a colourPrimary-ből veszi
+ * (zelos: FIELD_DROPDOWN_COLOURED_DIV), ezért lesz a menü is sötét, fehér
+ * szöveggel — külön CSS nélkül.
+ */
 SG.buildTheme = function () {
   return Blockly.Theme.defineTheme('scratchgym', {
     base: Blockly.Themes.Classic,
 
     blockStyles: {
       gym_exercise_style: {
-        colourPrimary: SG.COLORS.exercise,
-        colourSecondary: '#3373cc',
-        colourTertiary: '#2b5ea6'
+        colourPrimary: '#16233d',
+        colourSecondary: '#1e3054',
+        colourTertiary: SG.COLORS.exercise
       },
       gym_control_style: {
-        colourPrimary: SG.COLORS.control,
-        colourSecondary: '#e08800',
-        colourTertiary: '#b06a00'
+        colourPrimary: '#2a2113',
+        colourSecondary: '#3a2d18',
+        colourTertiary: SG.COLORS.control
       },
       gym_progress_style: {
-        colourPrimary: SG.COLORS.progress,
-        colourSecondary: '#c8403a',
-        colourTertiary: '#a3332e'
+        colourPrimary: '#2b1619',
+        colourSecondary: '#3b1e22',
+        colourTertiary: SG.COLORS.progress
       },
       gym_logic_style: {
-        colourPrimary: SG.COLORS.logic,
-        colourSecondary: '#46b946',
-        colourTertiary: '#389438'
+        colourPrimary: '#15271b',
+        colourSecondary: '#1d3625',
+        colourTertiary: SG.COLORS.logic
       },
       gym_value_style: {
-        colourPrimary: SG.COLORS.value,
-        colourSecondary: '#855cd6',
-        colourTertiary: '#774dcb'
+        colourPrimary: '#1f1834',
+        colourSecondary: '#2b2148',
+        colourTertiary: SG.COLORS.value
       }
     },
 
@@ -52,16 +64,16 @@ SG.buildTheme = function () {
     },
 
     componentStyles: {
-      workspaceBackgroundColour: '#f7f8fb',
-      toolboxBackgroundColour: '#ffffff',
-      toolboxForegroundColour: '#1e2a3a',
-      flyoutBackgroundColour: '#eef1f7',
-      flyoutForegroundColour: '#6b7a90',
+      workspaceBackgroundColour: '#0b111d',
+      toolboxBackgroundColour: '#111a2b',
+      toolboxForegroundColour: '#e7edf9',
+      flyoutBackgroundColour: '#0e1626',
+      flyoutForegroundColour: '#8a99b5',
       flyoutOpacity: 1,
-      scrollbarColour: '#c3cbd9',
-      insertionMarkerColour: '#1e2a3a',
-      insertionMarkerOpacity: 0.3,
-      cursorColour: '#1e2a3a'
+      scrollbarColour: '#2c3a55',
+      insertionMarkerColour: '#8ab4ff',
+      insertionMarkerOpacity: 0.5,
+      cursorColour: '#8ab4ff'
     }
   });
 };
@@ -79,6 +91,26 @@ SG.buildToolbox = function () {
     return { shadow: { type: 'gym_exercise_ref' } };
   }
 
+  /**
+   * Előre kitöltött gyakorlatblokk. Így a leggyakoribb alapgyakorlatok néven
+   * húzhatók ki a listából, nem kell utólag legördülőt választani hozzájuk.
+   */
+  function preset(id, sets, reps, mode, weight, increment, rest) {
+    return {
+      kind: 'block',
+      type: 'gym_exercise',
+      fields: {
+        EXERCISE: id,
+        SETS: sets,
+        REPS: reps,
+        WEIGHT_MODE: mode,
+        WEIGHT: weight,
+        INCREMENT: increment,
+        REST: rest
+      }
+    };
+  }
+
   return {
     kind: 'categoryToolbox',
     contents: [
@@ -87,7 +119,13 @@ SG.buildToolbox = function () {
         name: '🏋 Gyakorlatok',
         categorystyle: 'gym_exercise_category',
         contents: [
-          { kind: 'block', type: 'gym_exercise' }
+          { kind: 'block', type: 'gym_exercise' },
+          preset('guggolas',       4, '5',    'progressive', 60, 5,   120),
+          preset('fekvenyomas',    4, '8-12', 'progressive', 40, 2.5,  90),
+          preset('felhuzas',       3, '5',    'progressive', 80, 5,   150),
+          preset('vallbol_nyomas', 3, '8-12', 'progressive', 25, 2.5,  90),
+          preset('evezes',         4, '8-12', 'progressive', 35, 2.5,  90),
+          preset('huzodzkodas',    3, '6-10', 'bodyweight',   0, 0,    90)
         ]
       },
       {
