@@ -174,7 +174,10 @@ js/
   data/exercises.js                gyakorlat-adatbázis, napok
   blocks/
     field-searchable-dropdown.js   kereshető legördülő mező
-    block-definitions.js           a 4 egyedi Blockly blokk
+    blocks-layout.js               gyakorlat, kör, nap, ciklus
+    blocks-progress.js             hét lezárásakor futó szabályblokkok
+    blocks-logic.js                elágazás, ismétlés, feltételek
+    blocks-value.js                számok, állapotlekérdezés, számítások
     toolbox.js                     téma, toolbox, kezdő terv
   core/
     progression.js                 súlyszámítás

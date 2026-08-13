@@ -1,16 +1,16 @@
-/* scratchgym — a négy egyedi Blockly blokk.
+/* scratchgym — a terv szerkezetét adó blokkok: gyakorlat, kör, nap, ciklus.
  *
  * Kapcsolat-típusok:
  *   'GymActivity' — gyakorlat és kör; mindkettő ugyanezt használja, ezért a kör
  *                   tetszőleges mélységben ágyazható önmagába, külön logika nélkül.
  *   'GymDay'      — napblokkok, a heti sablon stackje.
  *
- * A SG.defineBlocks()-t a main.js hívja, miután a Blockly betöltődött.
+ * A SG.defineLayoutBlocks()-t a main.js hívja, miután a Blockly betöltődött.
  */
 
 window.SG = window.SG || {};
 
-SG.defineBlocks = function () {
+SG.defineLayoutBlocks = function () {
 
   /** Újrarenderelés verzió-biztosan (Blockly 11-ben queueRender, régebben render). */
   function rerender(block) {
@@ -53,7 +53,8 @@ SG.defineBlocks = function () {
         .appendField(new Blockly.FieldDropdown([
           ['fix', 'fixed'],
           ['progresszív', 'progressive'],
-          ['testsúly', 'bodyweight']
+          ['testsúly', 'bodyweight'],
+          ['állapotból', 'state']
         ], function (newValue) {
           var block = this.getSourceBlock();
           if (block) block.updateWeightVisibility_(newValue);
@@ -64,6 +65,12 @@ SG.defineBlocks = function () {
         .appendField(new Blockly.FieldNumber(20, 0, 1000, 0.5), 'WEIGHT')
         .appendField('kg');
 
+      // 'állapotból' módban a súlyt egy értékblokk adja (pl. a működő max
+      // százaléka), nem a fenti szám. Csak ebben a módban látszik.
+      this.appendValueInput('ROW_WEIGHT_EXPR')
+        .setCheck('Number')
+        .appendField('érték:');
+
       this.appendDummyInput('ROW_INCREMENT')
         .appendField('hetente')
         .appendField(new Blockly.FieldNumber(2.5, -100, 100, 0.5), 'INCREMENT')
@@ -73,7 +80,8 @@ SG.defineBlocks = function () {
       this.setNextStatement(true, 'GymActivity');
       this.setStyle('gym_exercise_style');
       this.setTooltip('Egy gyakorlat: sorozat, ismétlés, súly és pihenő.\n' +
-        'Progresszív módban a súly hetente nő a megadott növekménnyel.');
+        'Progresszív módban a súly hetente nő a megadott növekménnyel.\n' +
+        '"Állapotból" módban a súlyt a bedugott értékblokk számolja ki.');
 
       // Kezdeti láthatóság. Betöltéskor a mentett értékek setValue-ja hívja a
       // validátorokat, azok pedig ismét ezeket a metódusokat.
@@ -97,6 +105,11 @@ SG.defineBlocks = function () {
 
       weightRow.setVisible(mode === 'fixed' || mode === 'progressive');
       incrementRow.setVisible(mode === 'progressive');
+
+      // Az értékblokkos sor külön null-ellenőrzést kap: régebbi mentésből
+      // betöltött blokkon is működnie kell, ahol ez az input még nincs meg.
+      var exprRow = this.getInput('ROW_WEIGHT_EXPR');
+      if (exprRow) exprRow.setVisible(mode === 'state');
 
       var label = this.getField('WEIGHT_LABEL');
       if (label) label.setValue(mode === 'progressive' ? 'kezdő' : 'érték');

@@ -157,7 +157,12 @@ SG.BLOCKLY_SOURCES = [
 
   function start() {
     SG.defineSearchableDropdown();
-    SG.defineBlocks();
+    // A blokkdefiníciók négy fájlban, témakörönként. A sorrend csak annyiban
+    // számít, hogy a progresszió adja a közös állapot-tulajdonságlistát.
+    SG.defineLayoutBlocks();
+    SG.defineProgressBlocks();
+    SG.defineLogicBlocks();
+    SG.defineValueBlocks();
 
     workspace = Blockly.inject('blocklyDiv', {
       toolbox: SG.buildToolbox(),

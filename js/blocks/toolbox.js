@@ -6,7 +6,9 @@ window.SG = window.SG || {};
 SG.COLORS = {
   exercise: '#4c97ff',
   control: '#ff9f1a',
-  progress: '#e8514b'
+  progress: '#e8514b',
+  logic: '#59c059',
+  value: '#9966ff'
 };
 
 SG.buildTheme = function () {
@@ -28,13 +30,25 @@ SG.buildTheme = function () {
         colourPrimary: SG.COLORS.progress,
         colourSecondary: '#c8403a',
         colourTertiary: '#a3332e'
+      },
+      gym_logic_style: {
+        colourPrimary: SG.COLORS.logic,
+        colourSecondary: '#46b946',
+        colourTertiary: '#389438'
+      },
+      gym_value_style: {
+        colourPrimary: SG.COLORS.value,
+        colourSecondary: '#855cd6',
+        colourTertiary: '#774dcb'
       }
     },
 
     categoryStyles: {
       gym_exercise_category: { colour: SG.COLORS.exercise },
       gym_control_category: { colour: SG.COLORS.control },
-      gym_progress_category: { colour: SG.COLORS.progress }
+      gym_progress_category: { colour: SG.COLORS.progress },
+      gym_logic_category: { colour: SG.COLORS.logic },
+      gym_value_category: { colour: SG.COLORS.value }
     },
 
     componentStyles: {
@@ -53,6 +67,18 @@ SG.buildTheme = function () {
 };
 
 SG.buildToolbox = function () {
+
+  /* Shadow-kitöltések: a toolboxból kihúzott blokk így rögtön ki van töltve,
+     de a foglalatba húzott saját blokk azonnal felülírja. */
+
+  function num(value) {
+    return { shadow: { type: 'gym_number', fields: { NUM: value } } };
+  }
+
+  function exercise() {
+    return { shadow: { type: 'gym_exercise_ref' } };
+  }
+
   return {
     kind: 'categoryToolbox',
     contents: [
@@ -78,7 +104,87 @@ SG.buildToolbox = function () {
         name: '🔁 Progresszió',
         categorystyle: 'gym_progress_category',
         contents: [
-          { kind: 'block', type: 'gym_repeat_weeks' }
+          { kind: 'block', type: 'gym_repeat_weeks' },
+          { kind: 'block', type: 'gym_on_week_close' },
+          {
+            kind: 'block',
+            type: 'gym_change_state',
+            inputs: { EXERCISE: exercise(), DELTA: num(2.5) }
+          },
+          {
+            kind: 'block',
+            type: 'gym_set_state',
+            inputs: { EXERCISE: exercise(), VALUE: num(0) }
+          },
+          {
+            kind: 'block',
+            type: 'gym_deload',
+            inputs: { EXERCISE: exercise(), PERCENT: num(10) }
+          },
+          {
+            kind: 'block',
+            type: 'gym_reset_counter',
+            inputs: { EXERCISE: exercise() }
+          }
+        ]
+      },
+      {
+        kind: 'category',
+        name: '🧠 Logika',
+        categorystyle: 'gym_logic_category',
+        contents: [
+          { kind: 'block', type: 'gym_if' },
+          { kind: 'block', type: 'gym_switch_week' },
+          { kind: 'block', type: 'gym_for_each' },
+          {
+            kind: 'block',
+            type: 'gym_compare',
+            inputs: { A: num(0), B: num(0) }
+          },
+          { kind: 'block', type: 'gym_and' },
+          { kind: 'block', type: 'gym_or' },
+          { kind: 'block', type: 'gym_not' },
+          {
+            kind: 'block',
+            type: 'gym_all_sets_done',
+            inputs: { EXERCISE: exercise() }
+          },
+          {
+            kind: 'block',
+            type: 'gym_week_multiple',
+            inputs: { N: num(4) }
+          }
+        ]
+      },
+      {
+        kind: 'category',
+        name: '🔢 Értékek',
+        categorystyle: 'gym_value_category',
+        contents: [
+          { kind: 'block', type: 'gym_number' },
+          {
+            kind: 'block',
+            type: 'gym_state_value',
+            inputs: { EXERCISE: exercise() }
+          },
+          {
+            kind: 'block',
+            type: 'gym_math',
+            inputs: { A: num(0), B: num(0) }
+          },
+          {
+            kind: 'block',
+            type: 'gym_percent_of',
+            inputs: { PERCENT: num(85), VALUE: num(0) }
+          },
+          {
+            kind: 'block',
+            type: 'gym_round_plate',
+            inputs: { VALUE: num(0), STEP: num(2.5) }
+          },
+          { kind: 'block', type: 'gym_week_index' },
+          { kind: 'block', type: 'gym_exercise_ref' },
+          { kind: 'block', type: 'gym_current_exercise' }
         ]
       }
     ]

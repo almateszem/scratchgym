@@ -1,0 +1,262 @@
+scratchgym — megoldandó hibák és nyitott pontok
+Készült: 2026-08-13, a blokk-definíciós lépés után.
+Állapot: a blokkok összerakhatók, de semmit nem csinálnak — az értelmező külön lépés.
+
+================================================================
+1. BLOKKOLÓ — az értelmező lépéséig marad
+================================================================
+
+[1.1] Az 'állapotból' súlymód csendben fix súlyként viselkedik
+      Hol:  js/core/interpreter.js:88-90
+      Mi:   A WEIGHT_MODE négy értéke közül a 'state' nincs kezelve, így az
+            else ágra esik, és a rejtett WEIGHT mező értékét (alapból 20 kg)
+            adja vissza. A ROW_WEIGHT_EXPR-be dugott értékblokkot senki nem
+            olvassa ki.
+      Hatás: az előnézet és a JSON-export félrevezető súlyt mutat — nem hibát,
+            hanem rossz számot, ami rosszabb.
+      Teendő: az értelmezőben kiértékelni a ROW_WEIGHT_EXPR kifejezést, addig
+            pedig legalább figyelmeztetést adni rá (lásd 1.3).
+
+[1.2] Egyetlen progressziós/logikai/érték blokk sem fut le
+      Hol:  js/core/interpreter.js:117-123 (readActivities), 129-198 (readTemplate)
+      Mi:   A readActivities csak gym_circuit és gym_exercise típust ismer, a
+            readTemplate csak gym_repeat_weeks és gym_day gyökeret keres. A
+            gym_on_week_close kalap és minden alatta lévő szabály kimarad.
+      Teendő: AST + runtime + állapotkezelés (működő max, számlálók, hét-index).
+
+[1.3] Nincs visszajelzés arról, hogy a szabályok nem futnak
+      Hol:  js/core/interpreter.js:159-165
+      Mi:   Az "árva blokk" figyelmeztetés csak gym_exercise és gym_circuit
+            típusra néz. Egy workspace-re dobott gym_on_week_close teljesen
+            némán kimarad — a felhasználó azt hiszi, működik.
+      Teendő: amíg nincs értelmező, egy explicit figyelmeztetés
+            ("a progressziós szabályok még nem futnak le"), utána pedig árva
+            szabályblokkra ugyanolyan figyelmeztetés, mint az árva gyakorlatra.
+
+================================================================
+2. BÖNGÉSZŐBEN MÉG NEM ELLENŐRZÖTT
+================================================================
+
+[2.1] Vizuális/renderelési ellenőrzés hiányzik
+      Mi:   A blokk-definíciók, a típusellenőrzés és a szerializáció valódi
+            Blockly 11-gyel, headless workspace-en le vannak tesztelve, de a
+            tényleges kirajzolás nem. Nyitva marad:
+              - a zelos renderer megjelenése az új, sok-inputos blokkokon
+                (különösen gym_round_plate: 2 value input + legördülő egy sorban),
+              - a mutátor fogaskerekének UI-ja (gym_if, gym_switch_week),
+              - a magas blokkok olvashatósága a gym_exercise 'állapotból'
+                módjában.
+      Teendő: index.html megnyitása, mind az öt kategória végigpróbálása.
+
+[2.2] A hét-sorszám mező helye a gym_switch_week-ben
+      Hol:  js/blocks/blocks-logic.js — SWITCH_MUTATOR_MIXIN.updateShape_
+      Mi:   A "ciklus [N]. hetén" felirat a statement inputon ül. Headless
+            tesztben ez helyes, de zelos rendererben előfordulhat, hogy a
+            mező és a "hetén" szó a C-alak fölé/mellé csúszik csúnyán.
+      Teendő: megnézni élőben; ha csúnya, esetenként külön dummy sor + statement.
+
+================================================================
+3. APRÓBB / KOZMETIKAI HIBÁK
+================================================================
+
+[3.1] Magyar toldalék-illeszkedés a gym_week_multiple feliratában
+      Hol:  js/blocks/blocks-logic.js — gym_week_multiple
+      Mi:   A felirat fixen "-nel", de a magyar hangrend szerint 3-nál "-mal",
+            4-nél "-gyel", 2-nél "-vel" lenne helyes. Mivel az N értékblokk
+            (nem mező), a toldalék nem tud a számhoz igazodni.
+      Lehetséges megoldás: átfogalmazás, ami toldalékfüggetlen — pl.
+            "a hét osztható ezzel: [N]" vagy "minden [N]. héten".
+
+[3.2] A gym_exercise 'állapotból' módja üres foglalattal indul
+      Hol:  js/blocks/toolbox.js — a 🏋 Gyakorlatok kategória gym_exercise eleme
+      Mi:   A többi új blokk value inputja shadow gym_number-t kap a toolboxban,
+            a ROW_WEIGHT_EXPR nem — mert 'fixed' módban rejtett lenne.
+            Módváltás után a felhasználó üres lyukat lát.
+      Lehetséges megoldás: shadow felvétele ide is, vagy a módváltáskor
+            automatikus shadow-beszúrás.
+
+[3.3] Rejtve maradó, de mentésbe kerülő kifejezésblokk
+      Hol:  js/blocks/blocks-layout.js — updateWeightVisibility_
+      Mi:   Ha a felhasználó 'állapotból' módban bedug egy kifejezést, majd
+            visszavált 'fix'-re, a blokk bekötve marad, csak nem látszik —
+            és a mentett JSON-ban is ott marad.
+      Megj.: ez a Blockly bevett viselkedése (a többi rejtett sor is így megy),
+            szándékos döntés kérdése, nem feltétlen javítandó.
+
+[3.4] Gyakorlatra hivatkozás saját gyakorlatnál nem lehetséges
+      Hol:  js/blocks/blocks-value.js — gym_exercise_ref
+      Mi:   A legördülő szándékosan nem tartalmazza a "Saját gyakorlat"
+            szentinelt, mert nincs mellette névmező. Így a szabályok nem tudnak
+            saját (nem adatbázisbeli) gyakorlatra hivatkozni.
+      Teendő: az értelmező-lépésnél eldönteni, kell-e névre hivatkozás.
+
+[3.5] gym_compare csak számokat hasonlít
+      Hol:  js/blocks/blocks-logic.js — gym_compare (A és B setCheck 'Number')
+      Mi:   Két gyakorlat egyenlőségét ("aktuális gyakorlat = guggolás") nem
+            lehet vizsgálni, mert az Exercise kimenet nem fér be.
+      Teendő: vagy egy külön gym_exercise_is blokk, vagy a check lazítása.
+
+[3.6] Nincs igaz/hamis literál blokk
+      Mi:   A gym_if feltétele csak összehasonlításból vagy logikai blokkból
+            jöhet; nincs kézzel beállítható "igaz"/"hamis". Teszteléshez és
+            ideiglenes kikapcsoláshoz jól jönne.
+
+================================================================
+4. TESZTELÉSI ÉS SZERKEZETI ADÓSSÁG
+================================================================
+
+[4.1] A blokkokra nincs a projektben futó teszt
+      Mi:   A test/ csomagok egyike sem tölti be a blokk-definíciókat. Az új
+            blokkokat egy ideiglenes, scratchpadben futó füstteszt ellenőrizte
+            (valódi Blockly 11 + jsdom, npm install-lal) — ez nem került a
+            repóba, mert a projekt szabálya: nincs npm install, nincs függőség.
+      Teendő: eldönteni, mi legyen:
+            (a) marad kézi ellenőrzés,
+            (b) egy opcionális, külön futtatandó teszt, ami csak akkor fut, ha
+                a blockly telepítve van,
+            (c) fake-Blockly shim a test/fake-dom.js mintájára, ami elég a
+                definíciók és a kapcsolat-típusok ellenőrzéséhez.
+
+[4.2] Headless Blockly-nál a value input elrejtése elszáll
+      Hol:  js/blocks/blocks-layout.js — updateWeightVisibility_ -> Input.setVisible
+      Mi:   Rejtésnél a Blockly a RenderedConnection.stopTrackingAll()-t hívja,
+            ami csak rajzolt workspace-en létezik; headless Workspace-en
+            "c.stopTrackingAll is not a function" hibával elszáll a gym_exercise
+            példányosítása. Böngészőben nincs baja.
+      Hatás: bármilyen jövőbeli Node-os teszt, ami valódi Blockly-val
+            példányosít gym_exercise-t, shimet igényel:
+              Blockly.Connection.prototype.startTrackingAll = function () { return []; };
+              Blockly.Connection.prototype.stopTrackingAll  = function () {};
+
+[4.3] Betöltési sorrend-függőség a blokkfájlok között
+      Hol:  index.html:61-64, js/blocks/blocks-value.js
+      Mi:   A blocks-value.js a SG.STATE_PROPERTY_OPTIONS listát használja, amit
+            a blocks-progress.js definiál. Betöltéskor ez nem baj (a lista csak
+            a gyárfüggvény futásakor kell), de ha valaki átrendezi a
+            script-tageket vagy a hívási sorrendet a main.js-ben, csendben
+            elszállhat.
+      Teendő: ha zavaró, a közös enumok átköltöztetése a js/data/ alá.
+
+[4.4] Az enum-értékek stabilitása
+      Mi:   A PROPERTY, UNIT, OP, DIRECTION, WHICH, COUNTER legördülők értékei
+            (workingMaxKg, percent, gte, nearest, cycleWeek, both, ...) a mentett
+            tervekbe kerülnek. Ugyanaz a szabály él rájuk, mint a gyakorlat-id-kre:
+            utólag átnevezni tilos, mert a régi mentések rájuk hivatkoznak.
+      Teendő: az exportformátum (schemaVersion) bővítésekor végiggondolni.
+
+[4.5] A kezdő terv nem mutat progressziós szabályt
+      Hol:  js/blocks/toolbox.js — SG.starterWorkspace()
+      Mi:   Az új felhasználó továbbra is a régi, szabály nélküli példatervet
+            kapja, így az új kategóriák létezése nem magától értetődő.
+      Teendő: az értelmező elkészülte után egy minta-szabály berakása
+            (pl. "ha 2 egymás utáni siker, akkor +2.5 kg").
+
+================================================================
+5. AZ EGÉSZ APP ÁTNÉZÉSE SORÁN TALÁLT TOVÁBBI HIBÁK
+   Módszer: kódátnézés + valódi Blockly 11-gyel lefuttatott próbák headless
+   workspace-en. Ahol "MÉRVE" szerepel, ott a viselkedés ki van próbálva,
+   nem következtetés.
+================================================================
+
+[5.1] SÚLYOS — egyetlen ismeretlen blokktípus TÖRLI a felhasználó teljes
+      mentett tervét, visszaállíthatatlanul
+      Hol:  js/storage/storage.js:60-71 (load), 73-81 (clear)
+      Mi:   A Blockly szerializációja ismeretlen blokktípusnál kivételt dob
+            ("Invalid block definition for type: X"). A load() catch ága erre
+            meghívja a clear()-t, ami kitörli a localStorage-ból a mentést —
+            tehát a hibás betöltés nem csak megszakad, hanem az eredeti adatot
+            is megsemmisíti. Nincs mentés a mentésről.
+      MÉRVE: - ismeretlen típus a terv MELLETT (külön gyökér): dobott, a
+               részlegesen betöltött 4 blokk a workspace-en maradt volna,
+               de a clear() után minden elveszik;
+             - ismeretlen típus a terv KÖZEPÉN (gyakorlatláncban): ugyanaz,
+               3 blokk töltődött be a hiba pillanatáig.
+      Mikor fordul elő a gyakorlatban:
+             - a felhasználó két gépen/böngészőben eltérő verziót futtat, és a
+               régebbi példány nyitja meg az újabb blokkokkal mentett tervet;
+             - bármelyik gym_ blokktípus jövőbeli átnevezése vagy törlése;
+             - a CDN-ről más Blockly-verzió jön, ami szigorúbban ellenőriz.
+      Kockázat most nőtt meg: 4 blokktípusról 26-ra mentünk fel, ráadásul
+            mutátoros extraState is került a mentésbe.
+      Teendő (javaslat):
+             a) a load() catch ága NE hívjon clear()-t, hanem tegye félre a
+                nyers JSON-t (pl. scratchgym.workspace.backup kulcsra), és a
+                felhasználónak jelezze, hogy a terv nem tölthető be;
+             b) a betöltés blokkonként, hibatűrően (a hibás blokk kihagyása a
+                többi megtartásával);
+             c) a mentett schemaVersion tényleges ellenőrzése (lásd 5.5).
+
+[5.2] A mutátor-állapotnak nincs felső korlátja — sérült/kézzel írt mentés
+      megfagyaszthatja a lapot
+      Hol:  js/blocks/blocks-logic.js — SWITCH_MUTATOR_MIXIN.loadExtraState,
+            IF_MUTATOR_MIXIN.loadExtraState
+      Mi:   A caseCount / elseIfCount ellenőrzés nélkül kerül a ciklusba.
+      MÉRVE: caseCount: 3000 -> 3001 input jött létre panasz nélkül (19 ms).
+            Egy elgépelt vagy sérült mentésben lévő nagy szám a böngészőben
+            (ahol minden input renderelődik is) befagyasztja a lapot.
+            A negatív és a szöveges érték ártalmatlan (0 ág lesz belőle),
+            de a szemét visszaíródik a következő mentésbe.
+      Teendő: felső korlát (pl. 0..20 eset, 0..20 elseif) és a bemenet
+            számmá alakítása a loadExtraState-ben. Ez a mi kódunk hibája,
+            néhány soros javítás.
+
+[5.3] A 600 ms-os késleltetett mentés miatt az utolsó módosítás elveszhet
+      Hol:  js/main.js:134-137 (saveSoon), 144-152 (onWorkspaceChange)
+      Mi:   A mentés debounce-olt, és nincs kiürítés lapelhagyáskor. Aki
+            módosít, majd 600 ms-on belül bezárja a fület vagy frissít, az
+            elveszíti az utolsó változtatást — miközben a fejlécben az áll,
+            hogy "Mentés…".
+      Teendő: beforeunload / visibilitychange eseményre azonnali mentés
+            (a debounce timer eldobásával).
+
+[5.4] Az export a 250 ms-mal korábbi állapotot menti ki
+      Hol:  js/main.js:121-132 (lastProgram, recomputeSoon), 202-216 (gombok)
+      Mi:   A gombok a lastProgram cache-ből dolgoznak, amit a debounce-olt
+            recompute frissít. Módosítás után azonnal az exportra kattintva a
+            változtatás még nincs benne a JSON-ban. Ha pedig a lastProgram még
+            null (pl. az első számolás elszállt), a gomb némán nem csinál
+            semmit — a felhasználó nem kap visszajelzést.
+      Teendő: exportkor szinkron recompute(), és üres eredménynél jelzés.
+
+[5.5] A mentett schemaVersion soha nincs ellenőrizve
+      Hol:  js/storage/storage.js:15, 34-37 (írás), 49-71 (olvasás)
+      Mi:   A META_KEY-be minden mentésnél bekerül a schemaVersion, de a load()
+            soha nem olvassa vissza. A verziószám így ma csak dísz — pont az a
+            védelem hiányzik, ami az 5.1-et kezelhetné (régi formátum
+            felismerése és migrálása vagy kontrollált elvetése).
+
+[5.6] A figyelmeztetés-sáv elrejtése az első billentyűleütésre visszaugrik
+      Hol:  js/preview/preview.js:59-82 (renderWarnings), 72 (dismiss)
+      Mi:   Az × gomb csak az el.warnings.hidden-t állítja, de minden
+            újraszámolás (tehát gyakorlatilag minden szerkesztés) újra
+            hidden = false-ra állítja. A "elrejtettem" szándék nem él túl
+            egy gépelést.
+      Teendő: az elrejtés megjegyzése (pl. a figyelmeztetéslista tartalmi
+            ujjlenyomata alapján: csak akkor jelenjen meg újra, ha változott).
+
+[5.7] Halott API: SG.Storage.lastSavedAt()
+      Hol:  js/storage/storage.js:83-91, exportálva a 97. sorban
+      Mi:   Sehonnan nincs meghívva (a fejléc a saját timeNow()-jából írja ki a
+            mentés idejét, nem ebből). Vagy használni kell (pl. "Utolsó mentés:
+            …" visszaállításkor), vagy törölni.
+
+[5.8] Kis kijelzőn az elrendezés használhatatlan
+      Hol:  css/styles.css:101-125 (#layout, #previewPanel), 26-31 (body)
+      Mi:   Az előnézet panel fix 380 px (1100 px alatt 300 px), a body pedig
+            overflow: hidden. Kb. 700 px szélesség alatt a szerkesztő területe
+            gyakorlatilag elfogy, és nincs mód a panel elrejtésére sem.
+            Mobilon/kis ablakban az app nem használható.
+      Teendő: töréspont, ahol a panel alulra kerül vagy összecsukható
+            (egy "előnézet" kapcsológomb a fejlécben).
+
+[5.9] Apróságok
+      - index.html: nincs <noscript> üzenet; JS nélkül üres, néma oldal.
+      - js/preview/preview.js:67-73: az × gombnak van title-je, de nincs
+        aria-label-je, a #warnings pedig nem role="status" — képernyőolvasóval
+        a figyelmeztetés megjelenése nem hallatszik.
+      - js/main.js:123-130: ha a computeProgram elszáll, csak konzolra kerül,
+        az előnézet pedig némán a régi állapotot mutatja tovább. Legalább egy
+        "az előnézet elavult" jelzés kellene.
+      - js/export/export.js:86: document.execCommand('copy') elavult, de a
+        Clipboard API file:// alól gyakran nem elérhető, így a fallback
+        indokolt marad — csak tudni kell róla.
